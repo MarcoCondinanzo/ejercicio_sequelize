@@ -1,34 +1,30 @@
-const {User} = require('./database/models/index');
+const express = require('express');
 
+const userService=require('./servicio');
 
-User.create(
-    {
-        name: 'Pedro',
-        email: 'pedro@mail.com',
-        password: '123',
-        rol: 1,
-        phoneNumber: '123456789',
-        cretedAt: new Date(),
-        updatedAt: new Date()
-    })
+const app= express();
 
-async function getAllUsers() {
-    const users = await User.findAll();
-    users.forEach(user => {
-        console.log(user.name);
-    });
+const logMiddleware=(req, res, next) => {
+    console.log(new Date());
+    next();
 }
+app.use(logMiddleware); 
 
-getAllUsers().then();
+app.get('/', (req,res) => {
+    res.send('<h1> Hola </h1>')
+    }) ;
 
-// User.findAll()
-//     .then((users) => {
-//         users.forEach(user => {
-//             console.log(user.name);
-//         });
-//     })
-//     .catch((error) => {
-//         console.log(error);
-//     });
+app.get('/usuarios', async (req,res) => {
+    res.json(await userService.getAllUsers())
+});
 
-// create a new user
+app.get('/usuarios/:id', async (req,res) => {
+    res.json(await userService.getUserByID(req.params.id))} );
+    
+app.get('/usuarios/sincronico', (req,res) =>{
+    userService.getAllUsers()
+        .then((usuarios) => { console.log(usuarios)})
+        .catch(error => res.send('error'));
+})
+
+module.exports = app;
